@@ -52,3 +52,19 @@ def quat_to_euler(q):
     cosy_cosp = 1 - 2 * (y * y + z * z)
     yaw = jnp.arctan2(siny_cosp, cosy_cosp)
     return jnp.array([roll, pitch, yaw])
+
+@jit
+def quat_from_euler(roll, pitch, yaw):
+    """Converts Roll, Pitch, Yaw to Quaternion (for initialization only)"""
+    cy = jnp.cos(yaw * 0.5)
+    sy = jnp.sin(yaw * 0.5)
+    cp = jnp.cos(pitch * 0.5)
+    sp = jnp.sin(pitch * 0.5)
+    cr = jnp.cos(roll * 0.5)
+    sr = jnp.sin(roll * 0.5)
+    
+    w = cr * cp * cy + sr * sp * sy
+    x = sr * cp * cy - cr * sp * sy
+    y = cr * sp * cy + sr * cp * sy
+    z = cr * cp * sy - sr * sp * cy
+    return jnp.array([w, x, y, z])

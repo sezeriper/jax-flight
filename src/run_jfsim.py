@@ -12,7 +12,7 @@ from quat import quat_to_euler
 # ==============================================================================
 # Visualization Logic
 # ==============================================================================
-def visualize_results(history: State, time: jnp.ndarray, T_total: float, png_path: str):
+def visualize_results(history: State, time: jnp.ndarray, png_path: str):
     """
     Handles all plotting and visualization logic using Matplotlib.
     This runs on CPU and interprets the JAX results.
@@ -23,7 +23,7 @@ def visualize_results(history: State, time: jnp.ndarray, T_total: float, png_pat
     
     # --- PLOTTING ---
     fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-    fig.suptitle(f'6-DOF JAX Simulation ({T_total}s Glider Demo)')
+    fig.suptitle(f'FDM: JFSim, Episode: {EPISODE_NAME}')
     
     # 1. Position
     axs[0, 0].plot(time, history.pos[:, 0], label='North (x)')
@@ -64,10 +64,8 @@ def visualize_results(history: State, time: jnp.ndarray, T_total: float, png_pat
     plt.tight_layout()
     plt.savefig(png_path)
 
-# ==============================================================================
-# Main Execution
-# ==============================================================================
-if __name__ == "__main__":
+
+def run_episode():
     # 1. Simulation settings
     T_TOTAL = SIM_PARAMS['T_total']
     DT = SIM_PARAMS['dt']
@@ -96,9 +94,17 @@ if __name__ == "__main__":
         init_state, 
         history_raw
     )
-    
+
     # Create time array matching history length (0 to T inclusive)
     time_array = jnp.linspace(0, T_TOTAL, STEPS + 1)
+
+    return history, time_array
+
+# ==============================================================================
+# Main Execution
+# ==============================================================================
+if __name__ == "__main__":
+    history, time_array = run_episode()
     
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"jfsim_{EPISODE_NAME}_{timestamp}"
@@ -110,7 +116,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
 
     # 3. Visualize
-    visualize_results(history, time_array, T_TOTAL, png_path)
+    visualize_results(history, time_array, png_path)
 
     # 4. Save to CSV
     print(f"Saving results to {csv_path}...")

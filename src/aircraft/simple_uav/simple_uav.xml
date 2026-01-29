@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+<fdm_config name="simple_uav" version="2.0" release="BETA">
+    <fileheader>
+        <author> Antigravity </author>
+        <filecreationdate> 2026-01-29 </filecreationdate>
+        <description> Generated aircraft model from simple_uav.py </description>
+    </fileheader>
+
+    <metrics>
+        <wingarea unit="M2"> 0.55 </wingarea>
+        <wingspan unit="M"> 2.8956 </wingspan>
+        <chord unit="M"> 0.18994 </chord>
+        <location name="AERORP" unit="M"> <x> 0 </x> <y> 0 </y> <z> 0 </z> </location>
+        <location name="EYEPOINT" unit="M"> <x> 0 </x> <y> 0 </y> <z> 0 </z> </location>
+        <location name="VRP" unit="M"> <x> 0 </x> <y> 0 </y> <z> 0 </z> </location>
+    </metrics>
+
+    <mass_balance>
+        <ixx unit="KG*M2"> 0.18250000476837158 </ixx>
+        <iyy unit="KG*M2"> 0.2175000011920929 </iyy>
+        <izz unit="KG*M2"> 0.2175000011920929 </izz>
+        <emptywt unit="KG"> 13.5 </emptywt>
+        <location name="CG" unit="M"> <x> 0 </x> <y> 0 </y> <z> 0 </z> </location>
+    </mass_balance>
+
+    <ground_reactions>
+        <contact type="STRUCTURE" name="TAIL">
+            <location unit="M"> <x> 1 </x> <y> 0 </y> <z> 0 </z> </location>
+            <static_friction>  0.8 </static_friction>
+            <dynamic_friction> 0.5 </dynamic_friction>
+            <spring_coeff unit="N/M"> 1000 </spring_coeff>
+            <damping_coeff unit="N/M/SEC"> 100 </damping_coeff>
+        </contact>
+    </ground_reactions>
+
+    <propulsion/>
+
+    <flight_control name="FCS">
+        <channel name="Roll">
+            <summer name="Aileron Control">
+                <input> fcs/aileron-cmd-norm </input>
+                <output> fcs/left-aileron-pos-rad </output>
+            </summer>
+        </channel>
+        <channel name="Pitch">
+            <summer name="Elevator Control">
+                <input> fcs/elevator-cmd-norm </input>
+                <output> fcs/elevator-pos-rad </output>
+            </summer>
+        </channel>
+        <channel name="Yaw">
+            <summer name="Rudder Control">
+                <input> fcs/rudder-cmd-norm </input>
+                <output> fcs/rudder-pos-rad </output>
+            </summer>
+        </channel>
+    </flight_control>
+
+    <aerodynamics>
+        <axis name="LIFT">
+            <function name="aero/force/Lift">
+                <product>
+                    <property>aero/qbar-psf</property>
+                    <property>metrics/Sw-sqft</property>
+                    <sum>
+                        <value> 0.28 </value>
+                        <product>
+                            <property>aero/alpha-rad</property>
+                            <value> 3.45 </value>
+                        </product>
+                    </sum>
+                </product>
+            </function>
+        </axis>
+
+        <axis name="DRAG">
+            <function name="aero/force/Drag">
+                <product>
+                    <property>aero/qbar-psf</property>
+                    <property>metrics/Sw-sqft</property>
+                    <sum>
+                        <value> 0.03 </value>
+                        <product>
+                            <property>aero/alpha-rad</property>
+                            <property>aero/alpha-rad</property>
+                            <value> 0.3 </value>
+                        </product>
+                    </sum>
+                </product>
+            </function>
+        </axis>
+
+        <axis name="SIDE">
+            <function name="aero/force/Side">
+                <product>
+                    <property>aero/qbar-psf</property>
+                    <property>metrics/Sw-sqft</property>
+                    <sum>
+                        <product>
+                            <property>aero/beta-rad</property>
+                            <value> -0.98 </value>
+                        </product>
+                        <product>
+                            <property>fcs/rudder-pos-rad</property>
+                            <value> 0.17 </value>
+                        </product>
+                    </sum>
+                </product>
+            </function>
+        </axis>
+
+        <axis name="ROLL">
+            <function name="aero/moment/Roll">
+                <product>
+                    <property>aero/qbar-psf</property>
+                    <property>metrics/Sw-sqft</property>
+                    <property>metrics/bw-ft</property>
+                    <sum>
+                        <product>
+                            <property>aero/beta-rad</property>
+                            <value> -0.12 </value>
+                        </product>
+                        <product>
+                            <property>velocities/p-rad_sec</property>
+                            <property>metrics/bw-ft</property>
+                            <value> 0.5 </value>
+                            <value> -0.26 </value>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                        </product>
+                        <product>
+                            <property>velocities/r-rad_sec</property>
+                            <property>metrics/bw-ft</property>
+                            <value> 0.5 </value>
+                            <value> 0.14 </value>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                        </product>
+                        <product>
+                            <property>fcs/left-aileron-pos-rad</property>
+                            <value> 0.08 </value>
+                        </product>
+                        <product>
+                            <property>fcs/rudder-pos-rad</property>
+                            <value> 0.105 </value>
+                        </product>
+                    </sum>
+                </product>
+            </function>
+        </axis>
+
+        <axis name="PITCH">
+            <function name="aero/moment/Pitch">
+                <product>
+                    <property>aero/qbar-psf</property>
+                    <property>metrics/Sw-sqft</property>
+                    <property>metrics/cbarw-ft</property>
+                    <sum>
+                        <value> 0.0 </value>
+                        <product>
+                            <property>aero/alpha-rad</property>
+                            <value> -0.38 </value>
+                        </product>
+                        <product>
+                            <property>velocities/q-rad_sec</property>
+                            <property>metrics/cbarw-ft</property>
+                            <value> 0.5 </value>
+                            <value> -3.6 </value>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                        </product>
+                        <product>
+                            <property>fcs/elevator-pos-rad</property>
+                            <value> -0.5 </value>
+                        </product>
+                    </sum>
+                </product>
+            </function>
+        </axis>
+
+        <axis name="YAW">
+            <function name="aero/moment/Yaw">
+                <product>
+                    <property>aero/qbar-psf</property>
+                    <property>metrics/Sw-sqft</property>
+                    <property>metrics/bw-ft</property>
+                    <sum>
+                        <product>
+                            <property>aero/beta-rad</property>
+                            <value> 0.25 </value>
+                        </product>
+                        <product>
+                            <property>velocities/p-rad_sec</property>
+                            <property>metrics/bw-ft</property>
+                            <value> 0.5 </value>
+                            <value> 0.022 </value>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                        </product>
+                        <product>
+                            <property>velocities/r-rad_sec</property>
+                            <property>metrics/bw-ft</property>
+                            <value> 0.5 </value>
+                            <value> -0.35 </value>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                        </product>
+                        <product>
+                            <property>fcs/left-aileron-pos-rad</property>
+                            <value> 0.06 </value>
+                        </product>
+                        <product>
+                            <property>fcs/rudder-pos-rad</property>
+                            <value> -0.032 </value>
+                        </product>
+                    </sum>
+                </product>
+            </function>
+        </axis>
+    </aerodynamics>
+</fdm_config>
