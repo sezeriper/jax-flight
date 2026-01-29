@@ -2,12 +2,11 @@ import jax
 import jax.numpy as jnp
 from jax import jit
 from functools import partial
-import matplotlib.pyplot as plt
-from typing import NamedTuple, Dict
-from parameters import ENV_PARAMS, AIRCRAFT_PARAMS  # Import parameters
+from typing import Dict, NamedTuple
+from quat import quat_rotate, quat_conjugate, quat_deriv
 
 # ==============================================================================
-# 1. State Definition (Pytree)
+# State Definition (Pytree)
 # ==============================================================================
 class State(NamedTuple):
     pos: jnp.ndarray   # [Pn, Pe, Pd] (Inertial Frame)
@@ -22,62 +21,7 @@ class Controls(NamedTuple):
     dt: float = 0.0 # Throttle (0-1)
 
 # ==============================================================================
-# 2. Helper Functions
-# ==============================================================================
-@jit
-def quat_rotate(q, v):
-    """Rotates vector v by quaternion q.
-    Rotates from Body -> Inertial if q is q_body_to_inertial.
-    """
-    # Formula: v_new = v + 2 * cross(q_xyz, cross(q_xyz, v) + q_w * v)
-    q0, q1, q2, q3 = q
-    q_vec = jnp.array([q1, q2, q3])
-    t = 2.0 * jnp.cross(q_vec, v)
-    return v + q0 * t + jnp.cross(q_vec, t)
-
-@jit
-def quat_conjugate(q):
-    return jnp.array([q[0], -q[1], -q[2], -q[3]])
-
-@jit
-def quat_deriv(q, omega):
-    """
-    Computes q_dot = 0.5 * Omega * q
-    Convention: q = [q0, q1, q2, q3] (Scalar first)
-                omega = [p, q, r] (Body rates)
-    """
-    p, q_rate, r = omega  # Explicit naming to avoid confusion
-    
-    # Matrix representation of quaternion multiplication
-    Omega = jnp.array([
-        [0.0,   -p,     -q_rate, -r],
-        [p,      0.0,    r,      -q_rate],
-        [q_rate, -r,     0.0,     p],
-        [r,      q_rate, -p,      0.0]
-    ])
-    return 0.5 * jnp.dot(Omega, q)
-
-@jit
-def quat_to_euler(q):
-    """Converts Quaternion to Roll, Pitch, Yaw (for plotting only)"""
-    w, x, y, z = q
-    # Roll (x-axis rotation)
-    sinr_cosp = 2 * (w * x + y * z)
-    cosr_cosp = 1 - 2 * (x * x + y * y)
-    roll = jnp.arctan2(sinr_cosp, cosr_cosp)
-    # Pitch (y-axis rotation)
-    sinp = 2 * (w * y - z * x)
-    pitch = jnp.where(jnp.abs(sinp) >= 1,
-                      jnp.sign(sinp) * (jnp.pi / 2),
-                      jnp.arcsin(sinp))
-    # Yaw (z-axis rotation)
-    siny_cosp = 2 * (w * z + x * y)
-    cosy_cosp = 1 - 2 * (y * y + z * z)
-    yaw = jnp.arctan2(siny_cosp, cosy_cosp)
-    return jnp.array([roll, pitch, yaw])
-
-# ==============================================================================
-# 3. Physics Engine (Aerodynamics + Dynamics)
+# Physics Engine (Aerodynamics + Dynamics)
 # ==============================================================================
 @jit
 def calculate_forces_moments(state: State, controls: Controls, aircraft_params: Dict, env_params: Dict):
@@ -224,102 +168,3 @@ def run_simulation_loop(init_state: State, init_controls: Controls, aircraft_par
     final_state, history = jax.lax.scan(step_fn, init_state, init_controls, length=steps)
     
     return history
-
-# ==============================================================================
-# 6. Visualization Logic
-# ==============================================================================
-def visualize_results(history: State, time: jnp.ndarray, T_total: float):
-    """
-    Handles all plotting and visualization logic using Matplotlib.
-    This runs on CPU and interprets the JAX results.
-    """
-    # Calculate Euler Angles for plotting
-    v_quat_to_euler = jax.vmap(quat_to_euler)
-    euler_angles = v_quat_to_euler(history.quat) * (180.0 / jnp.pi) # To Degrees
-    
-    # --- PLOTTING ---
-    fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-    fig.suptitle(f'6-DOF JAX Simulation ({T_total}s Glider Demo)')
-    
-    # 1. Position
-    axs[0, 0].plot(time, history.pos[:, 0], label='North (x)')
-    axs[0, 0].plot(time, history.pos[:, 1], label='East (y)')
-    axs[0, 0].plot(time, -history.pos[:, 2], label='Altitude (-z)') # Plot Altitude positive
-    axs[0, 0].set_title('Position (NED)')
-    axs[0, 0].set_ylabel('Meters')
-    axs[0, 0].legend()
-    axs[0, 0].grid(True)
-    
-    # 2. Velocity (Body)
-    axs[0, 1].plot(time, history.vel[:, 0], label='u (fwd)')
-    axs[0, 1].plot(time, history.vel[:, 1], label='v (right)')
-    axs[0, 1].plot(time, history.vel[:, 2], label='w (down)')
-    axs[0, 1].set_title('Body Velocity')
-    axs[0, 1].set_ylabel('m/s')
-    axs[0, 1].legend()
-    axs[0, 1].grid(True)
-    
-    # 3. Attitude (Euler)
-    axs[1, 0].plot(time, euler_angles[:, 0], label='Roll')
-    axs[1, 0].plot(time, euler_angles[:, 1], label='Pitch')
-    axs[1, 0].plot(time, euler_angles[:, 2], label='Yaw')
-    axs[1, 0].set_title('Attitude (Euler Angles)')
-    axs[1, 0].set_ylabel('Degrees')
-    axs[1, 0].legend()
-    axs[1, 0].grid(True)
-    
-    # 4. Angular Rates
-    axs[1, 1].plot(time, history.omega[:, 0], label='p (Roll Rate)')
-    axs[1, 1].plot(time, history.omega[:, 1], label='q (Pitch Rate)')
-    axs[1, 1].plot(time, history.omega[:, 2], label='r (Yaw Rate)')
-    axs[1, 1].set_title('Angular Rates')
-    axs[1, 1].set_ylabel('rad/s')
-    axs[1, 1].legend()
-    axs[1, 1].grid(True)
-    
-    plt.tight_layout()
-    plt.show()
-
-# ==============================================================================
-# 7. Main Execution
-# ==============================================================================
-if __name__ == "__main__":
-    # 1. Simulation settings
-    T_TOTAL = 5.0
-    DT = 0.01
-    STEPS = int(T_TOTAL / DT)
-    
-    # Initial Conditions
-    # Flying North at 25 m/s, Level flight, Altitude -100m (Up is negative Z)
-    init_state = State(
-        pos=jnp.array([0.0, 0.0, -100.0]), 
-        vel=jnp.array([25.0, 0.0, 0.0]),   
-        quat=jnp.array([1.0, 0.0, 0.0, 0.0]), # Identity quaternion
-        omega=jnp.array([0.0, 0.0, 0.0])
-    )
-
-    # 2. Controls (Zero for now)
-    controls = Controls(
-        da=jnp.zeros(STEPS),
-        de=jnp.zeros(STEPS),
-        dr=jnp.zeros(STEPS),
-        dt=jnp.zeros(STEPS)
-    )
-    
-    print("Compiling and Running Simulation...")
-    # Call the jitted simulation loop
-    history_raw = run_simulation_loop(init_state, controls, AIRCRAFT_PARAMS, ENV_PARAMS, DT, STEPS)
-    print("Simulation Complete.")
-
-    # 2. Post-Process Data
-    history = jax.tree_util.tree_map(
-        lambda init, hist: jnp.concatenate([init[None, :], hist], axis=0), 
-        init_state, 
-        history_raw
-    )
-    
-    # Create time array matching history length (0 to T inclusive)
-    time_array = jnp.linspace(0, T_TOTAL, STEPS + 1)
-    
-    # 3. Visualize
-    visualize_results(history, time_array, T_TOTAL)
