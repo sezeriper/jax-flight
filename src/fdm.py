@@ -54,9 +54,13 @@ def calculate_forces_moments(state: State, controls: Controls, aircraft_params: 
     
     # Transform Lift, Drag, and Side Force to Body Frame
     # Formula: F_body = R_y(alpha) * R_z(-beta) * [-Drag, SideForce, -Lift]^T
-    f_aero_x = q_bar * aircraft_params['S'] * (-cd * ca * cb + cy * ca * sb + cl * sa)
+    # Corrected signs for aerospace conventions:
+    # Fx = -Drag * cos(alpha) * cos(beta) + SideForce * cos(alpha) * sin(beta) - Lift * sin(alpha)
+    # Fz =  Drag * sin(alpha) * cos(beta) - SideForce * sin(alpha) * sin(beta) - Lift * cos(alpha)
+    
+    f_aero_x = q_bar * aircraft_params['S'] * (-cd * ca * cb + cy * ca * sb - cl * sa)
     f_aero_y = q_bar * aircraft_params['S'] * (-cd * sb + cy * cb)
-    f_aero_z = q_bar * aircraft_params['S'] * (-cd * sa * cb + cy * sa * sb - cl * ca)
+    f_aero_z = q_bar * aircraft_params['S'] * ( cd * sa * cb - cy * sa * sb - cl * ca)
     
     F_aero = jnp.array([f_aero_x, f_aero_y, f_aero_z])
     

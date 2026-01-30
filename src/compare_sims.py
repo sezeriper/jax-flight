@@ -101,7 +101,7 @@ def save_to_csv(history, time_array, csv_path):
 
 if __name__ == "__main__":
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    base_log_dir = f"logs/comparison/{EPISODE_NAME}/{timestamp}"
+    base_log_dir = f".logs/comparison/{EPISODE_NAME}/{timestamp}"
     os.makedirs(base_log_dir, exist_ok=True)
 
     print("--- Running JFSim ---")

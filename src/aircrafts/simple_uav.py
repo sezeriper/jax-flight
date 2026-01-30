@@ -3,6 +3,9 @@ import jax.numpy as jnp
 # ==============================================================================
 # Aircraft Parameters (Standard small UAV)
 # ==============================================================================
+
+NAME = 'simple_uav'
+
 AIRCRAFT_PARAMS = {
     'mass': 13.5,            # kg
     'S': 0.55,               # Wing area (m^2)

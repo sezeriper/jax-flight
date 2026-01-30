@@ -163,14 +163,14 @@ def generate_jsbsim_xml(params, aircraft_name="simple_uav"):
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> {params['C_l_p']} </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>velocities/r-rad_sec</property>
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> {params['C_l_r']} </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>fcs/left-aileron-pos-rad</property>
@@ -202,7 +202,7 @@ def generate_jsbsim_xml(params, aircraft_name="simple_uav"):
                             <property>metrics/cbarw-ft</property>
                             <value> 0.5 </value>
                             <value> {params['C_m_q']} </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>fcs/elevator-pos-rad</property>
@@ -229,14 +229,14 @@ def generate_jsbsim_xml(params, aircraft_name="simple_uav"):
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> {params['C_n_p']} </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>velocities/r-rad_sec</property>
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> {params['C_n_r']} </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>fcs/left-aileron-pos-rad</property>
@@ -354,6 +354,12 @@ def run_episode():
     # Initialize JSBSim with these ICs
     fdm.run_ic()
     
+    # 4b. Match Atmosphere (Override ISA with constant density from ENV_PARAMS)
+    # Convert kg/m^3 to slugs/ft^3: 1 slug/ft^3 = 515.3788 kg/m^3
+    rho_slugs_ft3 = ENV_PARAMS['rho'] / 515.3788
+    fdm.set_property_value("atmosphere/type", 0) # 0 = User specified constant atmosphere
+    fdm.set_property_value("atmosphere/rho-slugs_ft3", float(rho_slugs_ft3))
+    
     # 5. Simulation Loop
     print("Running JSBSim Simulation...")
     
@@ -445,8 +451,8 @@ if __name__ == "__main__":
     filename = f"jsbsim_{EPISODE_NAME}_{timestamp}"
     csv_filename = filename + ".csv"
     png_filename = filename + ".png"
-    csv_path = f"logs/jsbsim/{EPISODE_NAME}/{timestamp}/{csv_filename}"
-    png_path = f"logs/jsbsim/{EPISODE_NAME}/{timestamp}/{png_filename}"
+    csv_path = f".logs/jsbsim/{EPISODE_NAME}/{timestamp}/{csv_filename}"
+    png_path = f".logs/jsbsim/{EPISODE_NAME}/{timestamp}/{png_filename}"
     
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
     

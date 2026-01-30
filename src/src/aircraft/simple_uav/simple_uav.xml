@@ -125,14 +125,14 @@
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> -0.26 </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>velocities/r-rad_sec</property>
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> 0.14 </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>fcs/left-aileron-pos-rad</property>
@@ -164,7 +164,7 @@
                             <property>metrics/cbarw-ft</property>
                             <value> 0.5 </value>
                             <value> -3.6 </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>fcs/elevator-pos-rad</property>
@@ -191,14 +191,14 @@
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> 0.022 </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>velocities/r-rad_sec</property>
                             <property>metrics/bw-ft</property>
                             <value> 0.5 </value>
                             <value> -0.35 </value>
-                            <quotient> <value> 1.0 </value> <sum> <property>velocities/vt-fps</property> <value> 0.001 </value> </sum> </quotient>
+                            <quotient> <value> 1.0 </value> <sum> <property>velocities/u-fps</property> <value> 0.001 </value> </sum> </quotient>
                         </product>
                         <product>
                             <property>fcs/left-aileron-pos-rad</property>

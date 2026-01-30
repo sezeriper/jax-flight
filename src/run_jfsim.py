@@ -110,8 +110,8 @@ if __name__ == "__main__":
     filename = f"jfsim_{EPISODE_NAME}_{timestamp}"
     csv_filename = filename + ".csv"
     png_filename = filename + ".png"
-    csv_path = f"logs/jfsim/{EPISODE_NAME}/{timestamp}/{csv_filename}"
-    png_path = f"logs/jfsim/{EPISODE_NAME}/{timestamp}/{png_filename}"
+    csv_path = f".logs/jfsim/{EPISODE_NAME}/{timestamp}/{csv_filename}"
+    png_path = f".logs/jfsim/{EPISODE_NAME}/{timestamp}/{png_filename}"
 
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
 
